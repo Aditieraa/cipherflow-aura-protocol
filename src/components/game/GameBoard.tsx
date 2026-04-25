@@ -19,8 +19,8 @@ export function GameBoard() {
   const [selectedSlot, setSelectedSlot] = useState(0);
   const [showLB, setShowLB] = useState(false);
   const [showEnd, setShowEnd] = useState(false);
-  const [glitchRow, setGlitchRow] = useState<number | null>(null);
-  const [shakeRow, setShakeRow] = useState<number | null>(null);
+  const [computingRow, setComputingRow] = useState<number | null>(null);
+  const [glowRow, setGlowRow] = useState<{ index: number; color: "green" | "red" } | null>(null);
   const [breach, setBreach] = useState(false);
   const [laserPos, setLaserPos] = useState({ x: 50, y: 50 });
 
@@ -81,35 +81,28 @@ export function GameBoard() {
     if (!canSubmit) return;
     const submittedIndex = game.activeRow;
     const fbBefore = game.rows[submittedIndex];
-    setGlitchRow(submittedIndex);
-    // run engine after glitch begins so visual state aligns
+    setComputingRow(submittedIndex);
     game.submitRow();
-    // Determine "no match" by re-reading; we'll evaluate after state flush via micro-task
-    setTimeout(() => {
-      // NOTE: feedback will be present on the previously-active row
-      // We can't read game state here reliably, so trigger shake based on submitted row's guess vs secret
-      // Use evaluator-equivalent: count blacks/whites by comparing arrays
-      const guess = fbBefore?.guess ?? [];
-      const secret = game.secret;
-      let black = 0, white = 0;
-      const sUsed = Array(secret.length).fill(false);
-      const gUsed = Array(guess.length).fill(false);
-      for (let i = 0; i < guess.length; i++) {
-        if (guess[i] === secret[i]) { black++; sUsed[i] = true; gUsed[i] = true; }
+    // Evaluate locally to decide red/green glow
+    const guess = fbBefore?.guess ?? [];
+    const secret = game.secret;
+    let black = 0, white = 0;
+    const sUsed = Array(secret.length).fill(false);
+    const gUsed = Array(guess.length).fill(false);
+    for (let i = 0; i < guess.length; i++) {
+      if (guess[i] === secret[i]) { black++; sUsed[i] = true; gUsed[i] = true; }
+    }
+    for (let i = 0; i < guess.length; i++) {
+      if (gUsed[i]) continue;
+      for (let j = 0; j < secret.length; j++) {
+        if (sUsed[j]) continue;
+        if (guess[i] === secret[j]) { white++; sUsed[j] = true; break; }
       }
-      for (let i = 0; i < guess.length; i++) {
-        if (gUsed[i]) continue;
-        for (let j = 0; j < secret.length; j++) {
-          if (sUsed[j]) continue;
-          if (guess[i] === secret[j]) { white++; sUsed[j] = true; break; }
-        }
-      }
-      if (black === 0 && white === 0) {
-        setShakeRow(submittedIndex);
-        setTimeout(() => setShakeRow(null), 500);
-      }
-    }, 50);
-    setTimeout(() => setGlitchRow(null), 750);
+    }
+    const anyMatch = black + white > 0;
+    setGlowRow({ index: submittedIndex, color: anyMatch ? "green" : "red" });
+    setTimeout(() => setComputingRow(null), 520);
+    setTimeout(() => setGlowRow(null), 1200);
   }
 
   if (game.status === "idle") {
@@ -197,8 +190,8 @@ export function GameBoard() {
               onSlotClear={(slot) => game.clearSlot(slot)}
               selectedSlot={i === game.activeRow ? selectedSlot : undefined}
               onSelectSlot={setSelectedSlot}
-              glitch={glitchRow === i}
-              shake={shakeRow === i}
+              computing={computingRow === i}
+              resultGlow={glowRow?.index === i ? glowRow.color : null}
             />
           ))}
         </div>
