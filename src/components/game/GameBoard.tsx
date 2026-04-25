@@ -120,7 +120,6 @@ export function GameBoard() {
     <div className="relative w-full max-w-3xl mx-auto scene-3d">
       {game.status === "won" && <Confetti />}
       {breach && <div aria-hidden className="pointer-events-none fixed inset-0 z-40 animate-breach-flash" />}
-      <TerminalLog active={game.status === "playing"} />
 
       {/* HUD */}
       <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-gradient-card shadow-3d px-4 sm:px-6 py-3 preserve-3d">
