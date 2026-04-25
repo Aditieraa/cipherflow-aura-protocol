@@ -193,7 +193,7 @@ export function GameBoard() {
         open={showEnd}
         status={game.status === "lost" ? "lost" : "won"}
         secret={game.secret}
-        attemptsUsed={game.activeRow + (game.status === "won" ? 1 : 1)}
+        attemptsUsed={game.rows.filter(r => r.submitted).length}
         timeTaken={game.elapsed}
         difficulty={game.difficulty}
         onClose={() => setShowEnd(false)}
