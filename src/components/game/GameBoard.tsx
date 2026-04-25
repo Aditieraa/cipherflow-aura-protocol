@@ -12,6 +12,9 @@ import { TerminalLog } from "./TerminalLog";
 import { Difficulty } from "@/game/types";
 import { Eraser, RotateCcw, Send, Sparkles, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import heroImage from "@/assets/cipher-hero.jpg";
+import orbLogo from "@/assets/cipher-orb-logo.png";
+import gridBg from "@/assets/cipher-grid-bg.jpg";
 
 export function GameBoard() {
   const game = useGame("medium");
@@ -124,9 +127,13 @@ export function GameBoard() {
       {/* HUD */}
       <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-gradient-card shadow-3d px-4 sm:px-6 py-3 preserve-3d">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-accent shadow-[0_0_20px_hsl(258_90%_66%/0.6)]">
-            <Sparkles className="h-5 w-5 text-white" />
-          </div>
+          <img
+            src={orbLogo}
+            alt="CipherFlow orb logo"
+            width={48}
+            height={48}
+            className="h-11 w-11 drop-shadow-[0_0_18px_hsl(258_90%_66%/0.8)] animate-float-orb"
+          />
           <div>
             <div className="font-display text-base sm:text-lg font-bold tracking-widest text-foreground">
               CIPHER<span className="text-glow-purple text-accent">FLOW</span>
@@ -155,7 +162,7 @@ export function GameBoard() {
         onMouseMove={handleMove}
         onMouseLeave={handleLeave}
         className={cn(
-          "relative rounded-3xl border border-white/10 bg-gradient-card shadow-3d p-3 sm:p-5 preserve-3d transition-transform duration-300",
+          "relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-card shadow-3d p-3 sm:p-5 preserve-3d transition-transform duration-300",
           game.status === "won" && "animate-win-zoom",
         )}
         style={{
@@ -163,6 +170,18 @@ export function GameBoard() {
           transformStyle: "preserve-3d",
         }}
       >
+        {/* Decorative grid backdrop */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.18] mix-blend-screen"
+          style={{
+            backgroundImage: `url(${gridBg})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            maskImage: "radial-gradient(ellipse at center, black 30%, transparent 80%)",
+            WebkitMaskImage: "radial-gradient(ellipse at center, black 30%, transparent 80%)",
+          }}
+        />
         {/* ambient orbs */}
         <div aria-hidden className="pointer-events-none absolute -top-16 -left-16 h-56 w-56 rounded-full bg-accent/20 blur-3xl animate-float-orb" />
         <div aria-hidden className="pointer-events-none absolute -bottom-20 -right-10 h-64 w-64 rounded-full bg-[hsl(var(--accent-blue))]/20 blur-3xl animate-float-orb" style={{ animationDelay: "1.4s" }} />
@@ -278,15 +297,38 @@ function IdleScreen({
   onLeaderboard: () => void;
 }) {
   return (
-    <div className="relative w-full max-w-2xl mx-auto scene-3d">
-      <div className="rounded-3xl border border-white/10 bg-gradient-card shadow-3d p-6 sm:p-10 preserve-3d text-center relative overflow-hidden">
+    <div className="relative w-full max-w-3xl mx-auto scene-3d">
+      <div className="rounded-3xl border border-white/10 bg-gradient-card shadow-3d preserve-3d text-center relative overflow-hidden">
+        {/* Hero image */}
+        <div className="relative h-44 sm:h-60 w-full overflow-hidden">
+          <img
+            src={heroImage}
+            alt="Levitating glass orb console — CipherFlow gameplay"
+            width={1920}
+            height={1080}
+            className="absolute inset-0 h-full w-full object-cover scale-105"
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, hsl(222 50% 4% / 0.2) 0%, hsl(222 50% 4% / 0.65) 65%, hsl(222 50% 4%) 100%)",
+            }}
+          />
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/50 backdrop-blur px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--primary))] animate-pulse" />
+            Mainframe Online
+          </div>
+        </div>
+
         <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-72 w-72 rounded-full bg-accent/30 blur-3xl animate-float-orb" />
         <div aria-hidden className="pointer-events-none absolute -bottom-24 right-0 h-72 w-72 rounded-full bg-[hsl(var(--accent-blue))]/25 blur-3xl animate-float-orb" style={{ animationDelay: "1.2s" }} />
 
-        <div className="relative">
+        <div className="relative px-6 sm:px-10 pb-8 sm:pb-10 -mt-2">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--primary))] animate-pulse" />
-            Mainframe Online
+            <img src={orbLogo} alt="" width={20} height={20} className="h-4 w-4" />
+            Cipher Protocol v1.0
           </div>
           <h1 className="mt-4 font-display text-4xl sm:text-6xl font-black tracking-tight text-foreground">
             CIPHER<span className="text-glow-purple text-accent">FLOW</span>
