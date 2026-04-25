@@ -8,6 +8,7 @@ import { DifficultyPicker } from "./DifficultyPicker";
 import { Leaderboard } from "./Leaderboard";
 import { EndGameModal } from "./EndGameModal";
 import { Confetti } from "./Confetti";
+import { TerminalLog } from "./TerminalLog";
 import { Difficulty } from "@/game/types";
 import { Eraser, RotateCcw, Send, Sparkles, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,10 @@ export function GameBoard() {
   const [selectedSlot, setSelectedSlot] = useState(0);
   const [showLB, setShowLB] = useState(false);
   const [showEnd, setShowEnd] = useState(false);
+  const [glitchRow, setGlitchRow] = useState<number | null>(null);
+  const [shakeRow, setShakeRow] = useState<number | null>(null);
+  const [breach, setBreach] = useState(false);
+  const [laserPos, setLaserPos] = useState({ x: 50, y: 50 });
 
   const boardRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
@@ -25,6 +30,15 @@ export function GameBoard() {
   useEffect(() => {
     if (game.status === "won" || game.status === "lost") {
       const t = setTimeout(() => setShowEnd(true), 700);
+      return () => clearTimeout(t);
+    }
+  }, [game.status]);
+
+  // System Breach flash on win
+  useEffect(() => {
+    if (game.status === "won") {
+      setBreach(true);
+      const t = setTimeout(() => setBreach(false), 1500);
       return () => clearTimeout(t);
     }
   }, [game.status]);
@@ -37,6 +51,11 @@ export function GameBoard() {
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
     setTilt({ rx: -y * 6, ry: x * 6 });
+    // Laser grid follows cursor
+    setLaserPos({
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    });
   }
   function handleLeave() { setTilt({ rx: 0, ry: 0 }); }
 
@@ -58,6 +77,41 @@ export function GameBoard() {
     setSelectedSlot(0);
   }
 
+  function handleSubmit() {
+    if (!canSubmit) return;
+    const submittedIndex = game.activeRow;
+    const fbBefore = game.rows[submittedIndex];
+    setGlitchRow(submittedIndex);
+    // run engine after glitch begins so visual state aligns
+    game.submitRow();
+    // Determine "no match" by re-reading; we'll evaluate after state flush via micro-task
+    setTimeout(() => {
+      // NOTE: feedback will be present on the previously-active row
+      // We can't read game state here reliably, so trigger shake based on submitted row's guess vs secret
+      // Use evaluator-equivalent: count blacks/whites by comparing arrays
+      const guess = fbBefore?.guess ?? [];
+      const secret = game.secret;
+      let black = 0, white = 0;
+      const sUsed = Array(secret.length).fill(false);
+      const gUsed = Array(guess.length).fill(false);
+      for (let i = 0; i < guess.length; i++) {
+        if (guess[i] === secret[i]) { black++; sUsed[i] = true; gUsed[i] = true; }
+      }
+      for (let i = 0; i < guess.length; i++) {
+        if (gUsed[i]) continue;
+        for (let j = 0; j < secret.length; j++) {
+          if (sUsed[j]) continue;
+          if (guess[i] === secret[j]) { white++; sUsed[j] = true; break; }
+        }
+      }
+      if (black === 0 && white === 0) {
+        setShakeRow(submittedIndex);
+        setTimeout(() => setShakeRow(null), 500);
+      }
+    }, 50);
+    setTimeout(() => setGlitchRow(null), 750);
+  }
+
   if (game.status === "idle") {
     return (
       <IdleScreen
@@ -72,6 +126,8 @@ export function GameBoard() {
   return (
     <div className="relative w-full max-w-3xl mx-auto scene-3d">
       {game.status === "won" && <Confetti />}
+      {breach && <div aria-hidden className="pointer-events-none fixed inset-0 z-40 animate-breach-flash" />}
+      <TerminalLog active={game.status === "playing"} />
 
       {/* HUD */}
       <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-gradient-card shadow-3d px-4 sm:px-6 py-3 preserve-3d">
@@ -119,6 +175,16 @@ export function GameBoard() {
         <div aria-hidden className="pointer-events-none absolute -top-16 -left-16 h-56 w-56 rounded-full bg-accent/20 blur-3xl animate-float-orb" />
         <div aria-hidden className="pointer-events-none absolute -bottom-20 -right-10 h-64 w-64 rounded-full bg-[hsl(var(--accent-blue))]/20 blur-3xl animate-float-orb" style={{ animationDelay: "1.4s" }} />
 
+        {/* Floating laser-grid follower */}
+        <div
+          aria-hidden
+          className="laser-grid"
+          style={{
+            ["--laser-x" as string]: `${laserPos.x}%`,
+            ["--laser-y" as string]: `${laserPos.y}%`,
+          }}
+        />
+
         <div className="relative space-y-2.5 sm:space-y-3 preserve-3d">
           {game.rows.map((row, i) => (
             <GuessRow
@@ -131,6 +197,8 @@ export function GameBoard() {
               onSlotClear={(slot) => game.clearSlot(slot)}
               selectedSlot={i === game.activeRow ? selectedSlot : undefined}
               onSelectSlot={setSelectedSlot}
+              glitch={glitchRow === i}
+              shake={shakeRow === i}
             />
           ))}
         </div>
@@ -168,7 +236,7 @@ export function GameBoard() {
         <Button
           size="lg"
           disabled={!canSubmit}
-          onClick={() => game.submitRow()}
+          onClick={handleSubmit}
           className={cn(
             "bg-gradient-accent border-0 font-display tracking-widest px-6",
             canSubmit && "shadow-[0_0_28px_hsl(258_90%_66%/0.6)]",
