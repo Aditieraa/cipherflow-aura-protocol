@@ -12,14 +12,14 @@ interface GuessRowProps {
   onSlotClear?: (slot: number) => void;
   selectedSlot?: number;
   onSelectSlot?: (slot: number) => void;
-  glitch?: boolean;
-  shake?: boolean;
+  computing?: boolean;
+  resultGlow?: "green" | "red" | null;
 }
 
 export function GuessRow({
   row, index, isActive, slots,
   onSlotClick, onSlotClear, selectedSlot, onSelectSlot,
-  glitch, shake,
+  computing, resultGlow,
 }: GuessRowProps) {
   return (
     <div
@@ -29,8 +29,9 @@ export function GuessRow({
         isActive
           ? "border-accent/60 ring-1 ring-accent/40 animate-pulse-glow"
           : "border-white/5 opacity-80",
-        glitch && "animate-row-glitch",
-        shake && "animate-row-shake",
+        computing && "animate-row-compute",
+        resultGlow === "green" && "animate-result-green",
+        resultGlow === "red" && "animate-result-red",
       )}
       style={{
         transform: isActive ? "translateZ(36px)" : row.submitted ? "translateZ(0)" : "translateZ(8px)",

@@ -41,7 +41,7 @@ export function TerminalLog({ active }: Props) {
   }, [active]);
 
   return (
-    <div className="pointer-events-none fixed bottom-3 right-3 z-30 hidden md:block w-[280px] font-mono text-[10px] leading-snug text-[hsl(142_71%_55%)]/80">
+    <div className="w-full font-mono text-[10px] leading-snug text-[hsl(142_71%_55%)]/80">
       <div className="rounded-md border border-[hsl(142_71%_45%)]/25 bg-black/60 backdrop-blur-sm px-3 py-2 shadow-[0_0_18px_hsl(142_71%_45%/0.18)]">
         <div className="mb-1 flex items-center justify-between text-[9px] uppercase tracking-[0.25em] text-[hsl(142_71%_55%)]/60">
           <span>cipher://terminal</span>
@@ -50,7 +50,7 @@ export function TerminalLog({ active }: Props) {
             live
           </span>
         </div>
-        <div className="space-y-0.5 min-h-[80px]">
+        <div className="space-y-0.5 min-h-[60px] max-h-[88px] overflow-hidden">
           {lines.map(l => (
             <div key={l.id} className="animate-term-line-in truncate">
               <span className="text-[hsl(142_71%_55%)]/50">&gt;</span> {l.text}
