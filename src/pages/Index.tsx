@@ -1,16 +1,22 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { GameBoard } from "@/components/game/GameBoard";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
-    </div>
+    <main className="relative min-h-screen w-full overflow-hidden">
+      {/* ambient background grid */}
+      <div aria-hidden className="absolute inset-0 bg-grid pointer-events-none" />
+      <div aria-hidden className="absolute top-0 left-1/2 -translate-x-1/2 h-[640px] w-[1100px] rounded-full bg-accent/10 blur-[160px] pointer-events-none" />
+      <div aria-hidden className="absolute bottom-0 right-0 h-[480px] w-[760px] rounded-full bg-[hsl(var(--accent-blue))]/10 blur-[160px] pointer-events-none" />
+
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center justify-center px-4 py-10 sm:py-14">
+        <h2 className="sr-only">CipherFlow — 3D Mastermind code-breaker game</h2>
+        <GameBoard />
+        <footer className="mt-10 text-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
+          Crafted for the Cipher Protocol · v1.0
+        </footer>
+      </div>
+    </main>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
