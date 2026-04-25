@@ -184,5 +184,4 @@ All colors MUST be HSL.
     100% { transform: translate3d(var(--cx, 0), 110vh, 0) rotate(720deg); opacity: 0; }
   }
   .animate-confetti { animation: confetti-fall 2.6s ease-in forwards; animation-delay: var(--c-delay, 0ms); }
-  }
 }
