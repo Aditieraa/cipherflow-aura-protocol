@@ -248,6 +248,11 @@ export function GameBoard() {
         />
       </div>
 
+      {/* Terminal narrative */}
+      <div className="mt-5">
+        <TerminalLog active={game.status === "playing"} />
+      </div>
+
       <Leaderboard open={showLB} onOpenChange={setShowLB} initialDifficulty={game.difficulty} />
       <EndGameModal
         open={showEnd}
